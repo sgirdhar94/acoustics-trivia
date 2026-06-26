@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Host View — Noise News Trivia</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #f5f4f0;
+    color: #111;
+    font-family: 'Space Grotesk', sans-serif;
+    min-height: 100vh;
+    padding: 32px 16px;
+  }
+
+  /* PASSWORD SCREEN */
+  #password-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 24px;
+  }
+
+  .lock-icon { font-size: 2rem; margin-bottom: 16px; }
+
+  .pw-card {
+    background: #fff;
+    border: 1px solid #e0dedd;
+    border-radius: 12px;
+    padding: 32px 28px;
+    width: 100%;
+    max-width: 360px;
+    text-align: center;
+  }
+
+  .pw-eyebrow {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #2563eb;
+    margin-bottom: 8px;
+  }
+
+  .pw-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 6px; }
+  .pw-sub { font-size: 0.88rem; color: #999; margin-bottom: 24px; }
+
+  .pw-input {
+    width: 100%;
+    background: #f5f4f0;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    color: #111;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1rem;
+    padding: 12px 14px;
+    outline: none;
+    text-align: center;
+    letter-spacing: 0.1em;
+    transition: border-color 0.2s;
+  }
+
+  .pw-input:focus { border-color: #2563eb; }
+
+  .pw-btn {
+    margin-top: 12px;
+    width: 100%;
+    background: #111;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 13px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .pw-btn:hover { background: #333; }
+
+  .pw-error {
+    display: none;
+    margin-top: 10px;
+    font-size: 0.85rem;
+    color: #dc2626;
+  }
+
+  /* MAIN HOST VIEW */
+  #host-view { display: none; max-width: 720px; margin: 0 auto; }
+
+  header { text-align: center; margin-bottom: 36px; }
+
+  .eyebrow {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #2563eb;
+    margin-bottom: 8px;
+  }
+
+  h1 { font-size: clamp(1.4rem, 4vw, 2rem); font-weight: 700; color: #111; margin-bottom: 4px; }
+  h1 span { color: #2563eb; }
+
+  .host-subtitle {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #aaa;
+    margin-top: 6px;
+  }
+
+  .search-wrap {
+    margin-bottom: 24px;
+  }
+
+  .search-input {
+    width: 100%;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    color: #111;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.95rem;
+    padding: 11px 16px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .search-input:focus { border-color: #2563eb; }
+  .search-input::placeholder { color: #bbb; }
+
+  .qa-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .qa-item {
+    background: #fff;
+    border: 1px solid #e0dedd;
+    border-radius: 10px;
+    padding: 18px 20px;
+  }
+
+  .qa-number {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #bbb;
+    margin-bottom: 6px;
+  }
+
+  .qa-question {
+    font-size: 0.97rem;
+    font-weight: 600;
+    color: #111;
+    line-height: 1.5;
+    margin-bottom: 10px;
+  }
+
+  .qa-answer-wrap {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: #f0f4ff;
+    border-left: 3px solid #2563eb;
+    border-radius: 0 6px 6px 0;
+    padding: 10px 14px;
+  }
+
+  .qa-answer-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #2563eb;
+    white-space: nowrap;
+    padding-top: 1px;
+  }
+
+  .qa-answer {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #1d4ed8;
+    line-height: 1.5;
+  }
+
+  .count-badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #999;
+    margin-bottom: 14px;
+  }
+
+  .no-results {
+    text-align: center;
+    color: #bbb;
+    font-size: 0.9rem;
+    padding: 40px 0;
+  }
+
+  footer {
+    margin-top: 40px;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    color: #ccc;
+    text-align: center;
+    padding-bottom: 32px;
+  }
+</style>
+</head>
+<body>
+
+<!-- PASSWORD SCREEN -->
+<div id="password-screen">
+  <div class="pw-card">
+    <div class="pw-eyebrow">Noise News International</div>
+    <div class="lock-icon">🔒</div>
+    <div class="pw-title">Volunteer access</div>
+    <div class="pw-sub">Enter the host password to view all questions and answers.</div>
+    <input class="pw-input" type="password" id="pw-input" placeholder="Password" onkeydown="if(event.key==='Enter')checkPassword()" />
+    <button class="pw-btn" onclick="checkPassword()">Enter</button>
+    <div class="pw-error" id="pw-error">Incorrect password. Try again.</div>
+  </div>
+</div>
+
+<!-- HOST VIEW -->
+<div id="host-view">
+  <header>
+    <p class="eyebrow">Noise News International</p>
+    <h1>Acoustics <span>Trivia</span> — Host view</h1>
+    <p class="host-subtitle">All questions and answers &mdash; volunteer use only</p>
+  </header>
+
+  <div class="search-wrap">
+    <input class="search-input" type="text" id="search-input" placeholder="Search questions or answers..." oninput="filterQuestions()" />
+  </div>
+
+  <div class="count-badge" id="count-badge"></div>
+  <div class="qa-list" id="qa-list"></div>
+
+  <footer>Noise News International &mdash; Host View &mdash; Not for participants</footer>
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+// CHANGE THIS PASSWORD before uploading to GitHub
+const HOST_PASSWORD = "ince2025";
+// ─────────────────────────────────────────────
+
+const QUESTIONS = [
+  { q: "Which acoustician designed Boston Symphony Hall?", a: "Wallace Clement Sabine" },
+  { q: "What acoustician is responsible for the Noise Criteria (NC) curves?", a: "Beranek / Leo Beranek" },
+  { q: "What acoustician is responsible for the Room Criteria (RC) curves?", a: "Blazier" },
+  { q: "What is a reasonable NRC for a 2\" fiberglass panel (type A mounting)?", a: "1.1" },
+  { q: "Based on testing done at NRC, what is the approximate difference in level, all else being equal, of a toilet flush with cast iron vs. ABS (plastic) drain pipe?", a: "10 dB" },
+  { q: "A toilet exhaust fan is rated at 2 sones. This corresponds to approximately what SPL?", a: "50 dB" },
+  { q: "What is the decibel reference for sound pressure level in air?", a: "20 µPa" },
+  { q: "What is the decibel reference for sound pressure in water?", a: "1 µPa" },
+  { q: "What is the ratio of angular frequency to frequency?", a: "2π (two pi)" },
+  { q: "Complete this analogy: period is to frequency as wavelength is to ____.", a: "Wavenumber" },
+  { q: "Assuming harmonic analysis, what is the relationship between acceleration and velocity?", a: "Differentiate velocity to get acceleration (or integrate acceleration to get velocity)" },
+  { q: "The speed of sound in air — increases, decreases, or does not change significantly with temperature?", a: "Increases" },
+  { q: "The International Building Code requires what minimum IIC rating for assemblies between residences?", a: "IIC 50" },
+  { q: "According to the WHO Guidelines for Community Noise (1999), to avoid negative effects on sleep, the indoor LAeq should not exceed what level?", a: "LAeq 30 dB" },
+  { q: "According to the WHO Guidelines for Community Noise (1999), to avoid negative effects on sleep, the indoor LAFmax should not exceed what level?", a: "LAFmax 45 dB" },
+  { q: "In a condenser microphone, the diaphragm and backplate form a ___, whose value changes due to sound pressure.", a: "Capacitor" },
+  { q: "What are the time constants for Fast and Slow exponential time weightings?", a: "Fast = 125 ms, Slow = 1 sec (1000 ms)" },
+  { q: "For transducers, what does CCLD stand for?", a: "Constant Current Line Drive" },
+  { q: "Compared to a free-field measurement, a measurement with the microphone flush to a surface (such as a façade) theoretically increases the measured level by how much?", a: "6 dB" },
+  { q: "What is G-weighting in sound measurements used for?", a: "Infrasound" },
+  { q: "What is the approximate upper frequency limit of hearing of rats?", a: "80–90 kHz" },
+  { q: "In vibroacoustics, the reciprocal of impedance is _____.", a: "Admittance" },
+  { q: "In a 2007 JASA-EL study, a hearing threshold of 101 dB was measured at what frequency in the most sensitive individuals?", a: "28 kHz" },
+  { q: "In a 2004 review by Aalborg University researchers, the low-frequency hearing threshold was suggested to extend down to which frequency?", a: "2 Hz" },
+  { q: "What is the difference between Lden and Ldn?", a: "Lden adds an additional 5 dB evening penalty" },
+  { q: "What is the 'crest factor' of a noise signal?", a: "Ratio of peak to RMS level" },
+  { q: "What is the Schroeder frequency?", a: "The frequency above which a room is statistically diffuse" },
+  { q: "What is the critical frequency (coincidence frequency) of a panel?", a: "The frequency at which the bending wave speed in the panel matches the speed of sound in air" },
+  { q: "What are the three fundamental parts of a noise control problem?", a: "Source, path, and receiver" },
+  { q: "What is 'break-out' noise in ductwork?", a: "Sound from inside a duct radiating outward through duct walls into a room" },
+  { q: "What is infrasound?", a: "Low-frequency noise below 20 Hz" },
+  { q: "How do you add SPL from two equal coherent sources at a location?", a: "Add 6 dB" },
+  { q: "How do you add SPL from two equal incoherent sources at a location?", a: "Add 3 dB" },
+  { q: "What is the term for sound bending around an obstacle?", a: "Diffraction" },
+  { q: "What ear structure converts sound vibrations to neural signals?", a: "Cochlea" },
+  { q: "What lab-test rating describes a floor's impact noise resistance?", a: "IIC (Impact Insulation Class)" },
+  { q: "What is the European equivalent metric to STC?", a: "Rw" },
+  { q: "What effect causes an ambulance's siren pitch to change as it passes you?", a: "Doppler effect" },
+  { q: "What is the term for vibration's resonant frequency?", a: "Natural frequency" }
+];
+
+function checkPassword() {
+  const val = document.getElementById('pw-input').value;
+  if (val === HOST_PASSWORD) {
+    document.getElementById('password-screen').style.display = 'none';
+    document.getElementById('host-view').style.display = 'block';
+    renderAll();
+  } else {
+    document.getElementById('pw-error').style.display = 'block';
+    document.getElementById('pw-input').value = '';
+    document.getElementById('pw-input').focus();
+  }
+}
+
+function renderAll() { renderList(QUESTIONS); }
+
+function filterQuestions() {
+  const term = document.getElementById('search-input').value.toLowerCase().trim();
+  if (!term) { renderList(QUESTIONS); return; }
+  const filtered = QUESTIONS.filter((item, i) =>
+    item.q.toLowerCase().includes(term) || item.a.toLowerCase().includes(term)
+  );
+  renderList(filtered);
+}
+
+function renderList(items) {
+  const list = document.getElementById('qa-list');
+  const badge = document.getElementById('count-badge');
+  badge.textContent = `Showing ${items.length} of ${QUESTIONS.length} questions`;
+
+  if (items.length === 0) {
+    list.innerHTML = '<div class="no-results">No questions match your search.</div>';
+    return;
+  }
+
+  list.innerHTML = items.map((item, i) => {
+    const num = QUESTIONS.indexOf(item) + 1;
+    return `
+      <div class="qa-item">
+        <div class="qa-number">Q${num}</div>
+        <div class="qa-question">${escHtml(item.q)}</div>
+        <div class="qa-answer-wrap">
+          <span class="qa-answer-label">Answer</span>
+          <span class="qa-answer">${escHtml(item.a)}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
