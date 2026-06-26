@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Noise News Trivia</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+  :root {
+    --bg: #0d0d0d;
+    --surface: #161616;
+    --border: #2a2a2a;
+    --accent: #c8f135;
+    --accent-dim: #a0c020;
+    --text: #f0f0f0;
+    --muted: #888;
+    --correct: #3ddc84;
+    --wrong: #ff5c5c;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .eyebrow {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+
+  h1 {
+    font-size: clamp(1.6rem, 5vw, 2.4rem);
+    font-weight: 700;
+    line-height: 1.15;
+    color: var(--text);
+  }
+
+  h1 span { color: var(--accent); }
+
+  .hour-badge {
+    margin-top: 10px;
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 4px 12px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px 28px;
+    width: 100%;
+    max-width: 560px;
+  }
+
+  .q-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  .question-text {
+    font-size: 1.2rem;
+    font-weight: 600;
+    line-height: 1.5;
+    margin-bottom: 28px;
+    color: var(--text);
+  }
+
+  textarea {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1rem;
+    padding: 14px 16px;
+    resize: vertical;
+    min-height: 80px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  textarea:focus { border-color: var(--accent); }
+  textarea::placeholder { color: var(--muted); }
+
+  .btn {
+    margin-top: 16px;
+    width: 100%;
+    background: var(--accent);
+    color: #0d0d0d;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 15px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+  }
+
+  .btn:hover { background: var(--accent-dim); }
+  .btn:active { transform: scale(0.98); }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+    margin-top: 10px;
+  }
+
+  .btn-secondary:hover { background: var(--border); }
+
+  .result {
+    display: none;
+    margin-top: 24px;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+  }
+
+  .result.correct {
+    background: rgba(61, 220, 132, 0.08);
+    border: 1px solid var(--correct);
+  }
+
+  .result.wrong {
+    background: rgba(255, 92, 92, 0.08);
+    border: 1px solid var(--wrong);
+  }
+
+  .result-icon { font-size: 2rem; margin-bottom: 8px; }
+
+  .result-verdict {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .result.correct .result-verdict { color: var(--correct); }
+  .result.wrong .result-verdict { color: var(--wrong); }
+
+  .result-answer {
+    font-size: 0.9rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .result-answer strong {
+    color: var(--text);
+    display: block;
+    margin-top: 6px;
+    font-size: 1rem;
+  }
+
+  .prize-banner {
+    display: none;
+    margin-top: 16px;
+    background: rgba(200, 241, 53, 0.08);
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    padding: 16px 20px;
+    text-align: center;
+  }
+
+  .prize-banner .prize-icon { font-size: 1.6rem; margin-bottom: 6px; }
+
+  .prize-banner p {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--accent);
+    line-height: 1.5;
+  }
+
+  /* HOST MODE */
+  .host-toggle {
+    margin-top: 32px;
+    text-align: center;
+  }
+
+  .host-toggle button {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .host-toggle button:hover { color: var(--text); }
+
+  #host-panel {
+    display: none;
+    width: 100%;
+    max-width: 560px;
+    margin-top: 12px;
+  }
+
+  .host-card {
+    background: #1a1200;
+    border: 1px solid #3a2e00;
+    border-radius: 12px;
+    padding: 28px;
+  }
+
+  .host-card .q-label { color: #a08020; }
+
+  .host-q {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+
+  .host-a {
+    font-family: 'Space Mono', monospace;
+    font-size: 1rem;
+    color: var(--accent);
+    background: rgba(200, 241, 53, 0.07);
+    border-left: 3px solid var(--accent);
+    padding: 12px 16px;
+    border-radius: 0 6px 6px 0;
+    margin-bottom: 20px;
+  }
+
+  footer {
+    margin-top: 40px;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: #444;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <p class="eyebrow">Noise News International</p>
+  <h1>Acoustics <span>Trivia</span></h1>
+  <div class="hour-badge" id="hour-badge"></div>
+</header>
+
+<div class="card" id="quiz-card">
+  <p class="q-label">Your question</p>
+  <p class="question-text" id="question-display"></p>
+
+  <textarea id="answer-input" placeholder="Type your answer here..."></textarea>
+  <button class="btn" id="submit-btn" onclick="checkAnswer()">Submit Answer</button>
+
+  <div class="result" id="result-box">
+    <div class="result-icon" id="result-icon"></div>
+    <div class="result-verdict" id="result-verdict"></div>
+    <div class="result-answer">
+      The accepted answer:
+      <strong id="correct-answer-display"></strong>
+    </div>
+  </div>
+
+  <div class="prize-banner" id="prize-banner">
+    <div class="prize-icon">🎉</div>
+    <p>You got it! Visit the INCE Booth to claim your prize!</p>
+  </div>
+
+  <button class="btn btn-secondary" id="new-q-btn" onclick="loadNewRandom()" style="display:none;">Ask me another one</button>
+</div>
+
+<div class="host-toggle">
+  <button onclick="toggleHost()">Volunteer / host view</button>
+</div>
+
+<div id="host-panel">
+  <div class="host-card">
+    <p class="q-label">Host view — read aloud &amp; check answer</p>
+    <p class="host-q" id="host-q"></p>
+    <div class="host-a" id="host-a"></div>
+    <button class="btn" onclick="loadNewRandom()">Next random question</button>
+  </div>
+</div>
+
+<footer>Noise News International &mdash; Conference Booth Trivia</footer>
+
+<script>
+// ─────────────────────────────────────────────
+// QUESTIONS — edit this array to update content
+// Each entry: { q: "question text", a: "accepted answer" }
+// ─────────────────────────────────────────────
+const QUESTIONS = [
+  { q: "Which acoustician designed Boston Symphony Hall?", a: "Wallace Clement Sabine" },
+  { q: "What acoustician is responsible for the Noise Criteria (NC) curves?", a: "Beranek / Leo Beranek" },
+  { q: "What acoustician is responsible for the Room Criteria (RC) curves?", a: "Blazier" },
+  { q: "What is a reasonable NRC for a 2\" fiberglass panel (type A mounting)?", a: "1.1" },
+  { q: "Based on testing done at NRC, what is the approximate difference in level, all else being equal, of a toilet flush with cast iron vs. ABS (plastic) drain pipe?", a: "10 dB" },
+  { q: "A toilet exhaust fan is rated at 2 sones. This corresponds to approximately what SPL?", a: "50 dB" },
+  { q: "What is the decibel reference for sound pressure level in air?", a: "20 µPa" },
+  { q: "What is the decibel reference for sound pressure in water?", a: "1 µPa" },
+  { q: "What is the ratio of angular frequency to frequency?", a: "2π (two pi)" },
+  { q: "Complete this analogy: period is to frequency as wavelength is to ____.", a: "Wavenumber" },
+  { q: "Assuming harmonic analysis, what is the relationship between acceleration and velocity?", a: "Differentiate velocity to get acceleration (or integrate acceleration to get velocity)" },
+  { q: "The speed of sound in air — increases, decreases, or does not change significantly with temperature?", a: "Increases" },
+  { q: "The International Building Code requires what minimum IIC rating for assemblies between residences?", a: "IIC 50" },
+  { q: "According to the WHO Guidelines for Community Noise (1999), to avoid negative effects on sleep, the indoor LAeq should not exceed what level?", a: "LAeq 30 dB" },
+  { q: "According to the WHO Guidelines for Community Noise (1999), to avoid negative effects on sleep, the indoor LAFmax should not exceed what level?", a: "LAFmax 45 dB" },
+  { q: "In a condenser microphone, the diaphragm and backplate form a ___, whose value changes due to sound pressure.", a: "Capacitor" },
+  { q: "What are the time constants for Fast and Slow exponential time weightings?", a: "Fast = 125 ms, Slow = 1 sec (1000 ms)" },
+  { q: "For transducers, what does CCLD stand for?", a: "Constant Current Line Drive" },
+  { q: "Compared to a free-field measurement, a measurement with the microphone flush to a surface (such as a façade) theoretically increases the measured level by how much?", a: "6 dB" },
+  { q: "What is G-weighting in sound measurements used for?", a: "Infrasound" },
+  { q: "What is the approximate upper frequency limit of hearing of rats?", a: "80–90 kHz" },
+  { q: "In vibroacoustics, the reciprocal of impedance is _____.", a: "Admittance" },
+  { q: "In a 2007 JASA-EL study, a hearing threshold of 101 dB was measured at what frequency in the most sensitive individuals?", a: "28 kHz" },
+  { q: "In a 2004 review by Aalborg University researchers, the low-frequency hearing threshold was suggested to extend down to which frequency?", a: "2 Hz" },
+  { q: "What is the difference between Lden and Ldn?", a: "Lden adds an additional 5 dB evening penalty" },
+  { q: "What is the 'crest factor' of a noise signal?", a: "Ratio of peak to RMS level" },
+  { q: "What is the Schroeder frequency?", a: "The frequency above which a room is statistically diffuse" },
+  { q: "What is the critical frequency (coincidence frequency) of a panel?", a: "The frequency at which the bending wave speed in the panel matches the speed of sound in air" },
+  { q: "What are the three fundamental parts of a noise control problem?", a: "Source, path, and receiver" },
+  { q: "What is 'break-out' noise in ductwork?", a: "Sound from inside a duct radiating outward through duct walls into a room" },
+  { q: "What is infrasound?", a: "Low-frequency noise below 20 Hz" },
+  { q: "How do you add SPL from two equal coherent sources at a location?", a: "Add 6 dB" },
+  { q: "How do you add SPL from two equal incoherent sources at a location?", a: "Add 3 dB" },
+  { q: "What is the term for sound bending around an obstacle?", a: "Diffraction" },
+  { q: "What ear structure converts sound vibrations to neural signals?", a: "Cochlea" },
+  { q: "What lab-test rating describes a floor's impact noise resistance?", a: "IIC (Impact Insulation Class)" },
+  { q: "What is the European equivalent metric to STC?", a: "Rw" },
+  { q: "What effect causes an ambulance's siren pitch to change as it passes you?", a: "Doppler effect" },
+  { q: "What is the term for vibration's resonant frequency?", a: "Natural frequency" }
+];
+// ─────────────────────────────────────────────
+
+let current = null;
+
+// Returns the current hour slot as a string, e.g. "2024060214"
+function currentHourKey() {
+  const now = new Date();
+  return `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}${String(now.getHours()).padStart(2,'0')}`;
+}
+
+// On first visit each hour, pick a fresh random question and store it.
+// If they return within the same hour, they see the same question.
+// "Ask me another" always picks a new random question but also updates storage.
+function getPersonalQuestion() {
+  const hourKey = currentHourKey();
+  const stored = JSON.parse(localStorage.getItem('nni_trivia') || '{}');
+
+  if (stored.hour === hourKey && typeof stored.index === 'number') {
+    // Same hour — return their stored question
+    return QUESTIONS[stored.index];
+  } else {
+    // New hour or first visit — pick a fresh random question
+    const index = Math.floor(Math.random() * QUESTIONS.length);
+    localStorage.setItem('nni_trivia', JSON.stringify({ hour: hourKey, index }));
+    return QUESTIONS[index];
+  }
+}
+
+function pickNewRandom() {
+  const hourKey = currentHourKey();
+  const index = Math.floor(Math.random() * QUESTIONS.length);
+  localStorage.setItem('nni_trivia', JSON.stringify({ hour: hourKey, index }));
+  return QUESTIONS[index];
+}
+
+function updateHourBadge() {
+  const now = new Date();
+  const next = new Date(now);
+  next.setHours(next.getHours() + 1, 0, 0, 0);
+  const minsLeft = Math.round((next - now) / 60000);
+  document.getElementById('hour-badge').textContent =
+    minsLeft <= 1 ? 'Question resets soon' : `Your question resets in ${minsLeft} min`;
+}
+
+function displayQuestion(q) {
+  current = q;
+  document.getElementById('question-display').textContent = current.q;
+  document.getElementById('answer-input').value = '';
+  document.getElementById('answer-input').style.display = 'block';
+  document.getElementById('submit-btn').style.display = 'block';
+
+  const resultBox = document.getElementById('result-box');
+  resultBox.style.display = 'none';
+  resultBox.className = 'result';
+
+  document.getElementById('prize-banner').style.display = 'none';
+  document.getElementById('new-q-btn').style.display = 'none';
+
+  // Sync host view
+  document.getElementById('host-q').textContent = current.q;
+  document.getElementById('host-a').textContent = current.a;
+}
+
+function loadNewRandom() {
+  displayQuestion(pickNewRandom());
+}
+
+function checkAnswer() {
+  const input = document.getElementById('answer-input').value.trim();
+  if (!input) return;
+
+  const resultBox = document.getElementById('result-box');
+  const icon = document.getElementById('result-icon');
+  const verdict = document.getElementById('result-verdict');
+  const correctDisplay = document.getElementById('correct-answer-display');
+  const prizeBanner = document.getElementById('prize-banner');
+
+  const inputLower = input.toLowerCase();
+  const answerLower = current.a.toLowerCase();
+
+  const stopwords = new Set(['a','an','the','is','are','in','of','to','and','or','for','at','by','as','on','with','that','this','it','its','be','was','were','has','have','from']);
+  const keyWords = answerLower.split(/[\s\/,\(\)]+/).filter(w => w.length > 1 && !stopwords.has(w));
+  const matchCount = keyWords.filter(w => inputLower.includes(w)).length;
+  const correct = keyWords.length > 0 && matchCount >= Math.ceil(keyWords.length * 0.5);
+
+  if (correct) {
+    resultBox.className = 'result correct';
+    icon.textContent = '✓';
+    verdict.textContent = 'Correct!';
+    prizeBanner.style.display = 'block';
+  } else {
+    resultBox.className = 'result wrong';
+    icon.textContent = '✗';
+    verdict.textContent = 'Not quite.';
+    prizeBanner.style.display = 'none';
+  }
+
+  correctDisplay.textContent = current.a;
+  resultBox.style.display = 'block';
+  document.getElementById('answer-input').style.display = 'none';
+  document.getElementById('submit-btn').style.display = 'none';
+  document.getElementById('new-q-btn').style.display = 'block';
+}
+
+function toggleHost() {
+  const panel = document.getElementById('host-panel');
+  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  displayQuestion(getPersonalQuestion());
+  updateHourBadge();
+  setInterval(updateHourBadge, 60000);
+
+  document.getElementById('answer-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      checkAnswer();
+    }
+  });
+});
+</script>
+</body>
+</html>
